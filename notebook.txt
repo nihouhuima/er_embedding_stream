@@ -1,0 +1,14 @@
+[installation]
+1. gensim need python 3.11, not 3.13
+2. pip install -r requirements.txt
+
+[Expl]
+embedding_file: idx, cid ...
+dump/indices.emb: only idx
+
+
+[pipeline]
+1. pre-training model: main.py, configuration in file config
+
+[config]
+if exporting similarity list to sqlite3 db, pls create a db with name "similarity_list", ex.```sqlite3 similarity_list.db```

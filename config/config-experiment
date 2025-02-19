@@ -1,0 +1,11 @@
+# !mandatory! task to execute, operation available: "traning" (for embedding files), "match" (for ER task), "test" (for verify accuracy of matching) 
+######### input config:
+task:experiment
+
+######### ground truth
+match_file:/home/zhongwei/Data_ingestion/Embdi/EmbDI datasets/pipeline/matches/er-matches/matches-dblp_scholar.txt
+
+######### similarity list
+similarity_file:pipeline/similarity/dblp_scholar.db
+
+log_path:pipeline/logging

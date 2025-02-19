@@ -1,0 +1,71 @@
+# !mandatory! task to execute, operation available: "traning" (for embedding files), "match" (for ER task), "test" (for verify accuracy of matching) 
+######### input config:
+task:smatch
+edgelists_file:pipeline/edgelists/amazon_google.txt
+# dataset_info:pipeline/info/info-paper-test.txt
+output_file:dblp_scholar
+# mandatory for operation "training", output path to embedding file
+embeddings_file:pipeline/embeddings/amazon_google.emb
+
+# experiment_type:ER
+######### ground truth
+# match_file:pipeline/matches/er-matches/matches-papers-test.txt
+# walks_file:/Users/rcap/Projects/embdi/pipeline/walks/amazon_google-ER.walks
+# dataset_file is required for SM
+# dataset_file:pipeline/datasets/amazon_google/amazon_google-master.csv
+
+########### walks config:
+##### compression: 创建一个压缩字典将字符串替换为更短的表示（例如 Base 36 编码），从而减少数据存储的大小
+# compression:true
+########### "desired" number of occurrences of each node
+representation_factor:1000
+write_walks:true
+sentence_length:60
+n_sentences:default
+follow_sub:false
+smoothing_method:no
+# Whether backtracking is allowed (whether it is possible to return to the previous node).
+backtrack:true
+# [If True, a similarity file will be needed to perfrom replacement]
+repl_numbers:False
+repl_strings:False
+walks_strategy:basic
+### [The graph algorithm will split all nodes with a prefix listed here] [图算法将拆分所有带有此处所列前缀的节点］
+flatten:tt
+
+########### test config:
+ntop:10
+ncand:1
+max_rank:3
+
+########## Embeddings configuration:
+learning_method:skipgram
+window_size:3
+n_dimensions:300
+# choices for training algo : word2vec, fasttext, doc2vec
+training_algorithm:word2vec
+
+
+########## others:
+intersection:false
+mlflow:false
+
+
+################################ kafka ###################################
+kafka_topicid:entity_resolution_process
+kafka_groupid:er_group
+bootstrap_servers:localhost
+port:9092
+# strategy for sliding windows: "count" for count-based, "time" for time-based
+window_strategy:count
+window_count:1000
+# time interval to execute entity resolution task (s) 
+window_time:5
+# stride for sliding windows or update interval of time (s), 0 --> tumbling windows
+update_frequency: 0
+most_similar_k: 10
+most_similar_inlist_n:8
+show_m_most_similar:5
+# output format for silimarity list : {sqlite3, json, parquet}
+output_format:db
+log_path:pipeline/logging

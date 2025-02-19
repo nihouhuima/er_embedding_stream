@@ -1,0 +1,50 @@
+# !mandatory! task to execute, operation available: "traning" (for embedding files), "match" (for ER task), "test" (for verify accuracy of matching) 
+######### input config:
+# task type: {train, test, match, train-test, train-match}
+task:train
+edgelists_file:pipeline/edgelists/papers-edglist-notokenize.txt
+# dataset_info:pipeline/info/info-paper-test.txt
+output_file:papers
+# output path for operation "training" to embedding file
+# embeddings_file:embeddings/papers-test.emb
+# experiment_type:ER
+########## ground truth
+# match_file:pipeline/matches/er-matches/matches-papers-test.txt
+# walks_file:/Users/rcap/Projects/embdi/pipeline/walks/amazon_google-ER.walks
+# dataset_file is required for SM
+# dataset_file:pipeline/datasets/amazon_google/amazon_google-master.csv
+
+########### walks config:
+write_walks:true
+sentence_length:60
+n_sentences:default
+follow_sub:false
+smoothing_method:no
+# Whether backtracking is allowed (whether it is possible to return to the previous node).
+backtrack:true
+# [If True, a similarity file will be needed to perfrom replacement]
+repl_numbers:False
+repl_strings:False
+walks_strategy:basic
+### {(str) prefix_of_nodes_to_flatten, all, ''} [The graph algorithm will split all nodes with a prefix listed here] [图算法将拆分所有带有此处所列前缀的节点］
+flatten:tt
+
+########### test config:
+ntop:10
+ncand:1
+max_rank:3
+
+########## Embeddings configuration:
+learning_method:skipgram
+window_size:3
+n_dimensions:300
+# choices for training algo : word2vec, fasttext, doc2vec
+training_algorithm:word2vec
+
+
+########## others:
+intersection:false
+mlflow:false
+
+
+################################ kafka ###################################
