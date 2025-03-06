@@ -47,11 +47,12 @@ class SimilarityList:
                 print(f"[ERROR] Database connexion failed: {Exception}")
                 self.app_logger.error(f"[ERROR] Database connexion failed: {Exception}")
         else:
-            self.file_path = os.path.join(similarity_file_path, f'{self.name}.{self.output_format}')
-            print(self.file_path)
+            if self.file_path == "":
+                self.file_path = os.path.join(similarity_file_path, f'{self.name}.{self.output_format}')
+                print(self.file_path)
             
 
-    def insert_data(self, key, value):
+    def insert_data(self, key):
         """
         write in a database 
         """
@@ -60,6 +61,7 @@ class SimilarityList:
             try:
                 if self.db_cursor is None:
                     self.check_output_path(self.name)
+                value = self.similarity_dict.get(key)
                 if value is not None and value != []:
                     self.db_cursor.execute(f"""
                         INSERT INTO matchinglist (id, similarity) VALUES (?, ?)
@@ -69,8 +71,8 @@ class SimilarityList:
                     #     INSERT INTO matchinglist (id, similarity) VALUES ({key}, {json.dumps(value)})
                     #     ON CONFLICT(id) DO UPDATE SET similarity = excluded.similarity;
                     #     """)
-                    print("[Great] data inserted!")
-                    self.app_logger.info("[Great] data inserted!")
+                    # print("[Great] data inserted!")
+                    # self.app_logger.info("[Great] data inserted!")
                     self.db_conn.commit()
             except Exception as e:
                 print(f"[ERROR] Insert data failed: {e}")
@@ -102,15 +104,22 @@ class SimilarityList:
     def add_similarity(self, target, new_similarities):
         # add to word and score to dictionary
         # If the target word already exists, take out the current similarity list, otherwise create an empty list
+        
         existing_similarities = self.similarity_dict.get(target, [])
+        existing_id = {id for _,id in existing_similarities}
 
-        # Store the first 10 are the most similar
+        # Store the first n are the most similar
         for word, score in new_similarities:
-            heapq.heappush(existing_similarities, (score, word))
-            if len(existing_similarities) > self.most_similar_num:  # 超过n个，去除最小的
-                heapq.heappop(existing_similarities)
+            if word not in existing_id:
+                heapq.heappush(existing_similarities, (score, word))
+                if len(existing_similarities) > self.most_similar_num:  # 超过n个，去除最小的
+                    heapq.heappop(existing_similarities)
 
         self.similarity_dict[target] = existing_similarities
+
+    def add_similarity_batch(self, key, value):
+        self.similarity_dict[key] = value
+    
     
     def get_similarity_words_with_score(self, word, n):
         """
@@ -152,3 +161,11 @@ class SimilarityList:
             return True, common_neighbors
         else:
             return False, None
+        
+if __name__ == '__main__':
+    # test
+    sim = SimilarityList(3, "db")
+    sim.add_similarity("apple", [("banana", 0.8), ("cherry", 0.9), ("grape", 0.85)])
+    sim.add_similarity("apple", [("orange", 0.7), ("pear", 0.95), ("watermelon", 0.92)])
+
+    print(sim.similarity_dict.get("apple"))  

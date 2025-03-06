@@ -33,3 +33,18 @@ def write_kafka_log(log_path):
     handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logger.addHandler(handler)
     return logger
+
+def write_debug_log(log_path):
+    # check dir exists
+    path = f"{log_path}/debug"
+    os.makedirs(path, exist_ok=True)
+
+    # create handler
+    handler = RotatingFileHandler(f"{path}/debug.log", maxBytes=5 * 1024 * 1024, backupCount=10)
+
+    # log configuration
+    logger = logging.getLogger('debug')
+    logger.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logger.addHandler(handler)
+    return logger

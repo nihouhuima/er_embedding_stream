@@ -46,6 +46,7 @@ def learn_embeddings(
                 workers=workers,
                 sample=sampling_factor,
             )
+            print("...1...")
             # model.wv.save_word2vec_format(output_embeddings_file, binary=False)
             model.save(output_embeddings_file) # Saves in binary format by default
         else:
@@ -58,8 +59,9 @@ def learn_embeddings(
                 workers=workers,
                 sample=sampling_factor,
             )
-            # model.wv.save_word2vec_format(output_embeddings_file, binary=False)
-            model.save(output_embeddings_file) # Saves in binary format by default
+            print("...2...")
+            model.wv.save_word2vec_format(output_embeddings_file, binary=False)
+            # model.save(output_embeddings_file) # Saves in binary format by default
     elif training_algorithm == "doc2vec":
         if learning_method == "skipgram":
             sg = 1
@@ -77,8 +79,10 @@ def learn_embeddings(
                 workers=workers,
                 sample=sampling_factor,
             )
-            # model.wv.save_word2vec_format(output_embeddings_file, binary=False)
-            model.save(output_embeddings_file) # Saves in binary format by default
+            print("...3...")
+
+            model.wv.save_word2vec_format(output_embeddings_file, binary=False)
+            # model.save(output_embeddings_file) # Saves in binary format by default
         else:
             model = Doc2Vec(
                 sentences=walks,
@@ -89,8 +93,10 @@ def learn_embeddings(
                 workers=workers,
                 sample=sampling_factor,
             )
-            # model.wv.save_word2vec_format(output_embeddings_file, binary=False)
-            model.save(output_embeddings_file) # Saves in binary format by default
+            print("...4...")
+
+            model.wv.save_word2vec_format(output_embeddings_file, binary=False)
+            # model.save(output_embeddings_file) # Saves in binary format by default
     elif training_algorithm == "fasttext":
         print("Using Fasttext")
         if write_walks:
@@ -101,8 +107,10 @@ def learn_embeddings(
                 workers=workers,
                 vector_size=dimensions,
             )
-            # model.wv.save(output_embeddings_file)
-            model.save(output_embeddings_file)
+            print("...5...")
+            
+            model.wv.save(output_embeddings_file)
+            # model.save(output_embeddings_file)
         else:
             model = FastText(
                 sentences=walks,
@@ -111,8 +119,10 @@ def learn_embeddings(
                 min_count=2,
                 window=window_size,
             )
-            # model.wv.save(output_embeddings_file)
-            model.save(output_embeddings_file)
+            print("...6...")
+
+            model.wv.save(output_embeddings_file)
+            # model.save(output_embeddings_file)
 
 
 def return_combined(row, wv, n_dimensions):

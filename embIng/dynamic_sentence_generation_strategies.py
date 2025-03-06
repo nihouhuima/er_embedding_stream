@@ -1,11 +1,10 @@
 import datetime
 import random
-
 from tqdm import tqdm
 
 from embIng.dynamic_graph import Node
 from embIng.utils import *
-
+import traceback
 
 class RandomWalk:
     def __init__(
@@ -19,6 +18,7 @@ class RandomWalk:
         repl_numbers=True,
         follow_replacement=False,
     ):
+        # print('test1')
         starting_node = graph_nodes[starting_node_name]
         first_node_name = starting_node.get_random_start()
         if first_node_name != starting_node_name:
@@ -26,8 +26,9 @@ class RandomWalk:
         else:
             self.walk = [starting_node_name]
         current_node_name = starting_node_name
-        current_node = graph_nodes[current_node_name]
+        current_node = starting_node
         sentence_step = len(self.walk)
+        # print('test2')
         while sentence_step < sentence_len:
             if uniform:
                 current_node_name = current_node.get_random_neighbor()
@@ -40,8 +41,10 @@ class RandomWalk:
                 current_node_name, replaced_node = self.replace_string_value(graph_nodes[current_node_name])
             else:
                 replaced_node = current_node_name
+
             if not backtrack and current_node_name == self.walk[-1]:
                 continue
+
             if follow_replacement:
                 current_node_name = replaced_node
 
@@ -167,6 +170,7 @@ def generate_walks(configuration, graph, intersection=None):
                 except Exception as e:
                     print("node: ", _r)
                     print(e)
+                    traceback.print_exc()
                     break
 
                 r.append(w.get_walk())
@@ -184,37 +188,6 @@ def generate_walks(configuration, graph, intersection=None):
             count_cells += 1
             pbar.update(random_walks_per_node)
         pbar.close()
-
-    # needed = n_sentences - sentence_counter
-    # if needed > 0:
-    #     t_comp = datetime.datetime.now()
-    #     str_comp_time = t_comp.strftime(TIME_FORMAT)
-    #     print(OUTPUT_FORMAT.format("Completing fraction of random walks.", str_comp_time))
-
-    #     with tqdm(total=needed, desc="# Sentence generation progress: ") as pbar:
-    #         l_int = list(intersection)
-    #         for count_cells in range(needed):
-    #             cell = random.choice(l_int)
-    #             # if cell in intersection:
-    #             w = RandomWalk(
-    #                 graph.nodes,
-    #                 cell,
-    #                 sentence_length,
-    #                 backtrack,
-    #                 graph.uniform,
-    #                 repl_numbers=configuration["repl_numbers"],
-    #                 repl_strings=configuration["repl_strings"],
-    #             )
-    #             sen = [w.get_walk()]
-
-    #             for s in sen:
-    #                 if configuration["write_walks"]:
-    #                     ws = " ".join(s)
-    #                     s = ws + "\n"
-    #                     fp_walks.write(s)
-    #                 sentences += s
-    #             sentence_counter += len(sen)
-    #             pbar.update(1)
 
     sentence_distribution["basic"] = sentence_counter
     start_time = datetime.datetime.now()

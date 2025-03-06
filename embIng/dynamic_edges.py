@@ -355,15 +355,17 @@ class DynEdges:
                 weight_cid_to_cell = 1
                 self.edgelist.append([cell_node, cid_node, weight_cell_to_cid, weight_cid_to_cell])
 
-                if fp is not None:
-                    edgerow_rid_cell = '"{}","{}",{},{}\n'.format(
+                ####### output
+                edgerow_rid_cell = '"{}","{}",{},{}\n'.format(
                         rid_node, cell_node, weight_rid_to_cell, weight_cell_to_rid
                     )
-                    fp.write(edgerow_rid_cell)
-
-                    edgerow_cid_cell = '"{}","{}",{},{}\n'.format(
+                
+                edgerow_cid_cell = '"{}","{}",{},{}\n'.format(
                         cell_node, cid_node, weight_cell_to_cid, weight_cid_to_cell
                     )
+                
+                if fp is not None:                   
+                    fp.write(edgerow_rid_cell)                  
                     fp.write(edgerow_cid_cell)
 
     def get_edgelist(self):

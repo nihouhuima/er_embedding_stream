@@ -7,6 +7,9 @@ from tqdm import tqdm
 
 from embIng.utils import *
 
+from dataprocessing.similaritylist import SimilarityList
+from dataprocessing.write_log import write_app_log
+
 NGT_NOT_FOUND = ANNOY_NOT_FOUND = FAISS_NOT_FOUND = False
 
 try:
@@ -84,14 +87,11 @@ def build_similarity_structure(model_file, viable_lines, n_items, strategy,
             ####### example of mm : mm = ['queen', 'prince', 'monarch']
             idx = int(n.split('__')[1])
 
-            ####### two datasets 
-            ####### dataset1. id >= n_items
-            ####### dataset2. id < n_items
-            ####### cross-comparison
+            ####### source A -- source B
             if idx < n_items:
-                candidates = [_ for _ in mm if int(_.split('__')[1]) >= n_items]
+                candidates = [(_, id) for id, _ in ms if int(id.split('__')[1]) >= n_items]
             else:
-                candidates = [_ for _ in mm if int(_.split('__')[1]) < n_items]
+                candidates = [(_, id) for id, _ in ms if int(id.split('__')[1]) < n_items]
             ####### n_candidates: n_candidates_from_ntop  to take when looking for the closest. Boosts recall, reduces precision a lot
             candidates = candidates[:n_candidates]
             most_similar[n] = candidates
@@ -182,7 +182,7 @@ def build_similarity_structure(model_file, viable_lines, n_items, strategy,
 
         most_similar = {}
 
-        D, I = index.search(mat, k=n_top+1)
+        D, I = index.search(mat, k=n_top*10)
         # D, I = index.search(query, size=n_top, epsilon=epsilon)
         # mm = [item[0] for item in ms[1:]]
         # mm = list(map(words.__getitem__, mm))
@@ -336,7 +336,19 @@ def entity_resolution(input_file: str, configuration: dict,
     if task == 'test':
         dict_result = compare_ground_truth_only(most_similar, matches_file, n_items, n_top)
     elif task == 'match':
-        matches = perform_matching(most_similar)
+        app_logger = write_app_log("pipeline/logging/er")
+        sim_list = SimilarityList(10, "db")
+        sim_list.set_logger(app_logger)
+        sim_list.check_output_path("batch1")
+
+        for el in most_similar:
+            print(el)
+            print(most_similar.get(el))
+            # value = [(item[1], item[0]) for item in most_similar.get(el)]
+            sim_list.similarity_dict[el] = most_similar.get(el)
+            sim_list.insert_data(el)
+        
+        # matches = perform_matching(most_similar)
     else:
         raise ValueError('Unknown task {}'.format(task))
 
@@ -349,7 +361,8 @@ def entity_resolution(input_file: str, configuration: dict,
     if task == 'test':
         return dict_result
     elif task == 'match':
-        return matches
+        # return matches
+        pass
     else:
         return None
 

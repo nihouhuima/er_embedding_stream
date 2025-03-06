@@ -3,9 +3,16 @@
 task:experiment
 
 ######### ground truth
-match_file:/home/zhongwei/Data_ingestion/Embdi/EmbDI datasets/pipeline/matches/er-matches/matches-dblp_scholar.txt
+match_file:/home/zhongwei/Data_ingestion/Embdi/EmbDI datasets/pipeline/matches/er-matches/matches-dblp_acm.txt
 
 ######### similarity list
-similarity_file:pipeline/similarity/dblp_scholar.db
+similarity_file:pipeline/similarity/dblp_acm-002.db
 
 log_path:pipeline/logging
+pretrained_number:0
+n_first:3
+approximate:16
+kendall:false
+######### if kendall:true, the following values are mandatory
+batch_file:pipeline/similarity/batch1.db
+source_num:1362

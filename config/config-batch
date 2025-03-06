@@ -2,24 +2,31 @@
 ######### input config:
 # task type: {train, test, match, train-test, train-match}
 task:train
-edgelists_file:pipeline/edgelists/papers-edglist-notokenize.txt
-# dataset_info:pipeline/info/info-paper-test.txt
-output_file:papers
+edgelists_file:pipeline/edgelists/dblp_acm-tableB.txt
+# ######### for pre-training of stream
+output_file:dblp_acm_B
 # output path for operation "training" to embedding file
-# embeddings_file:embeddings/papers-test.emb
-# experiment_type:ER
+embeddings_file:pipeline/embeddings/dblp_acm_B.emb
+
+experiment_type:ER
 ########## ground truth
-# match_file:pipeline/matches/er-matches/matches-papers-test.txt
 # walks_file:/Users/rcap/Projects/embdi/pipeline/walks/amazon_google-ER.walks
 # dataset_file is required for SM
 # dataset_file:pipeline/datasets/amazon_google/amazon_google-master.csv
+
+########### for batch test
+# dataset_info:/home/zhongwei/Data_ingestion/Embdi/embdi/pipeline/info/info-amazon_google.txt
+# #### ground truth
+# match_file:/home/zhongwei/Data_ingestion/Embdi/EmbDI datasets/pipeline/matches/er-matches/matches-amazon_google.txt
+# output_file:amazon_google-batch
+# embeddings_file:pipeline/embeddings/amazon_google-batch.emb
 
 ########### walks config:
 write_walks:true
 sentence_length:60
 n_sentences:default
 follow_sub:false
-smoothing_method:no
+smoothing_method:log
 # Whether backtracking is allowed (whether it is possible to return to the previous node).
 backtrack:true
 # [If True, a similarity file will be needed to perfrom replacement]
@@ -30,8 +37,8 @@ walks_strategy:basic
 flatten:tt
 
 ########### test config:
-ntop:10
-ncand:1
+ntop:50
+ncand:10
 max_rank:3
 
 ########## Embeddings configuration:

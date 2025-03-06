@@ -260,7 +260,7 @@ class EdgeList:
         self,
         df,
         edgefile_path=None,
-        prefixes=["3#__tn", "3$__tt", "7$__idx", "1$__cid"],
+        prefixes=["3#__tn", "3$__tt", "5$__idx", "1$__cid"],
         info_file=None,
         smoothing_method="no",
         flatten=False,
@@ -317,16 +317,18 @@ class EdgeList:
                         result = ast.literal_eval(og_value)
                         if isinstance(result, list):
                             for value in result:
-                                value = value.replace('"', r'\"')
-                                value = value.replace(',', '')
-                                value = value.replace(' ', '_')
+                                if isinstance(value, str):
+                                    value = value.replace('"', r'\"')
+                                    value = value.replace(',', '')
+                                    value = value.replace(' ', '_')
                                 self.draw(value, flatten, intersection, frequencies, rid, col, numeric_columns, fp)
                                 # print(value)
                     except (ValueError, SyntaxError):
                         value = og_value
-                        value = value.replace('"', r'\"')
-                        value = value.replace(',', '')
-                        value = value.replace(' ', '_')
+                        if isinstance(value, str):
+                            value = value.replace('"', r'\"')
+                            value = value.replace(',', '')
+                            value = value.replace(' ', '_')
                         # print(value)
                         self.draw(value, flatten, intersection, frequencies, rid, col, numeric_columns, fp)
                 except KeyError:

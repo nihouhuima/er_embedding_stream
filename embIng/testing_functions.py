@@ -6,7 +6,7 @@ from embIng.write_logging import *
 from embIng.schema_matching import schema_matching
 from embIng.utils import remove_prefixes
 from dataprocessing.kafkaconsumer import ConsumerService, check_configuration
-from dataprocessing.experiments import compare_ground_truth
+from dataprocessing.experiments import compare_ground_truth, compare_batch
 
 
 def test_driver(embeddings_file, configuration=None):
@@ -44,7 +44,7 @@ def match_driver(embeddings_file, df, configuration):
 
     return m_tuples, []
 
-def stream_driver(configuration, graph, model, edgelist_path, embeddings_file, prefixes):    
+def stream_driver(configuration, graph, model, edgelist_path, embeddings_file, prefixes, metrics):    
     try:
         check_configuration(configuration)
     except Exception as e:
@@ -55,8 +55,11 @@ def stream_driver(configuration, graph, model, edgelist_path, embeddings_file, p
             id_num = -1
         else: 
             id_num = int(graph.num_ids)
-        consumer = ConsumerService(configuration, graph, model, edgelist_path, embeddings_file, prefixes, id_num)
+        consumer = ConsumerService(configuration, graph, model, edgelist_path, embeddings_file, prefixes, id_num, metrics)
         consumer.run()
 
 def experiment_driver(configuration):
-    compare_ground_truth(configuration)
+    if configuration['kendall'] == "true":
+        compare_batch(configuration)
+    else:
+        compare_ground_truth(configuration)

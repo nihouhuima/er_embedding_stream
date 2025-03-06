@@ -83,8 +83,8 @@ class Node:
 
         # if not uniform:
         self.random_neigh = prepare_aliased_randomizer(self.neighbor_names, np.array(list(self.neighbors.values())))
-        # self.startfrom = np.array(self.startfrom)
-        # self.neighbors = None
+        self.startfrom = np.array(self.startfrom)
+        self.neighbors = None
 
     def rebuild(self):
         raise NotImplementedError
@@ -310,13 +310,13 @@ class Graph:
                                 numeric=self.node_is_numeric[node_prefix])
                     self.nodes[node_name] = node
                 tl.append(self.nodes[node_name])
-                print("testtest: ", tl)
+                # print("testtest: ", tl)
                 to_link.append(set(tl))
 
             for _1 in to_link[0]:
                 for _2 in to_link[1]:
                     if _1 != _2:
-                        print(f"create edge for {_1} and {_2}")
+                        # print(f"create edge for {_1} and {_2}")
                         self.add_edge(_1, _2, w1, w2)
 
         to_delete = []

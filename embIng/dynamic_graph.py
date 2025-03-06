@@ -5,6 +5,7 @@ import random
 from tqdm import tqdm
 
 from embIng.aliased_randomizer import prepare_aliased_randomizer
+from dataprocessing.write_log import write_debug_log
 from embIng.utils import *
 from embIng.write_logging import *
 
@@ -36,6 +37,7 @@ class Node:
         self.node_class = {}
         self._extract_class(node_class)
         self.numeric = numeric
+        self.uniform = True
 
     def _extract_class(self, node_type):
         bb = '{:03b}'.format(node_type)
@@ -54,26 +56,17 @@ class Node:
             return self.name
 
     def get_weighted_random_neighbor(self):
+        # self.normalize_neighbors(False)
+        # if self.random_neigh is None or len(self.neighbors) > 500:
+        if self.random_neigh is None:
+            self.normalize_neighbors(False)
         return self.random_neigh()
 
     def get_random_neighbor(self):
-        # print("startstart...")
-        # print(self.neighbor_names)
-        if isinstance(self.neighbor_names, np.ndarray):
-            if self.neighbor_names.size == 0:  # NumPy 数组的正确空值检查方式
-                self.normalize_neighbors(uniform=True)
-                # print("current neighbor names", self.neighbor_names)
-
-        # 处理 Python list 情况
-        elif isinstance(self.neighbor_names, list):
-            if not self.neighbor_names:  # Python 列表可以直接用 `not`
-                self.normalize_neighbors(uniform=True)
-                # print("current neighbor names", self.neighbor_names)
-
-        # 再次检查，防止仍然是空的
+        # self.normalize_neighbors(uniform=self.uniform)
         if len(self.neighbor_names) == 0:
-            raise ValueError("Error: No neighbors available!")
-
+            self.normalize_neighbors(uniform=self.uniform)
+            # raise ValueError("Error: No neighbors available!")
         return np.random.choice(self.neighbor_names)
 
     def add_neighbor(self, neighbor, weight):
@@ -89,17 +82,19 @@ class Node:
         return random.choices(self.similar_tokens, weights=self.similar_distance, k=1)[0]
 
     def normalize_neighbors(self, uniform):
+        # print("add neignbor for ", self.name)
         self.neighbor_names = np.array(list(self.neighbors.keys()))
+        # print("neighnor added", self.neighbor_names)
         # print("neighbor name", self.neighbor_names)
         self.number_neighbors = len(self.neighbor_names)
         # print("neighbor number", self.number_neighbors)
 
         # self.neighbor_frequencies = np.array(list(self.neighbors.values()))
 
-        # if not uniform:
+        if not uniform:
         ######## alias randomizer : need to be improved
-        self.random_neigh = prepare_aliased_randomizer(self.neighbor_names, np.array(list(self.neighbors.values()))) 
-        # self.startfrom = np.array(self.startfrom)
+            self.random_neigh = prepare_aliased_randomizer(self.neighbor_names, np.array(list(self.neighbors.values()))) 
+        self.startfrom = np.array(self.startfrom)
         # self.neighbors = None
 
     def rebuild(self):
@@ -203,6 +198,7 @@ class DynGraph:
     def update_graph(self, edgelist,sim_list=None, delta=True):
         ''' add new data to graph
         '''
+        app_logger = write_debug_log("pipeline/logging")
         ##### traitement of one line in file "edgelist", eg, [tt__tt_value, idx__001, 1, 1]
         for line in tqdm(edgelist, desc='# Loading edge value. '):
             n1 = line[0]
@@ -311,6 +307,7 @@ class DynGraph:
                 # print('Node {} has no neighbors'.format(node_name))
                 raise ValueError('Node {} has no neighbors'.format(node_name))
             else:
+                # app_logger.info(f'node name: {node_name}')
                 self.nodes[node_name].normalize_neighbors(uniform=self.uniform)
         # if delta: 
         #     print("delta nodes: ", self.delta_cell_lists)

@@ -1,11 +1,11 @@
 # !mandatory! task to execute, operation available: "traning" (for embedding files), "match" (for ER task), "test" (for verify accuracy of matching) 
 ######### input config:
 task:smatch
-edgelists_file:pipeline/edgelists/amazon_google.txt
+edgelists_file:pipeline/edgelists/dblp_acm.txt
 # dataset_info:pipeline/info/info-paper-test.txt
-output_file:dblp_scholar
+output_file:dblp_acm
 # mandatory for operation "training", output path to embedding file
-embeddings_file:pipeline/embeddings/amazon_google.emb
+embeddings_file:/home/zhongwei/Data_ingestion/embIng/pipeline/embeddings/dblp_acm.emb
 
 # experiment_type:ER
 ######### ground truth
@@ -17,15 +17,16 @@ embeddings_file:pipeline/embeddings/amazon_google.emb
 ########### walks config:
 ##### compression: 创建一个压缩字典将字符串替换为更短的表示（例如 Base 36 编码），从而减少数据存储的大小
 # compression:true
-########### "desired" number of occurrences of each node
-representation_factor:1000
+########### "desired" number  of occurrences of each node
+representation_factor:200
 write_walks:true
 sentence_length:60
 n_sentences:default
 follow_sub:false
-smoothing_method:no
+##### smooth: smooth/inverse_smooth/log/inverse/no
+smoothing_method:log
 # Whether backtracking is allowed (whether it is possible to return to the previous node).
-backtrack:true
+backtrack:false
 # [If True, a similarity file will be needed to perfrom replacement]
 repl_numbers:False
 repl_strings:False
@@ -43,8 +44,8 @@ learning_method:skipgram
 window_size:3
 n_dimensions:300
 # choices for training algo : word2vec, fasttext, doc2vec
-training_algorithm:word2vec
-
+training_algorithm:fasttext
+random_walks_per_node:20
 
 ########## others:
 intersection:false
@@ -58,14 +59,17 @@ bootstrap_servers:localhost
 port:9092
 # strategy for sliding windows: "count" for count-based, "time" for time-based
 window_strategy:count
-window_count:1000
+window_count:131
 # time interval to execute entity resolution task (s) 
-window_time:5
+window_time:3
+
 # stride for sliding windows or update interval of time (s), 0 --> tumbling windows
 update_frequency: 0
-most_similar_k: 10
-most_similar_inlist_n:8
+most_similar_k:10
+most_similar_inlist_n:10
 show_m_most_similar:5
+strategy_suppl:faiss
 # output format for silimarity list : {sqlite3, json, parquet}
 output_format:db
 log_path:pipeline/logging
+source_num:2293

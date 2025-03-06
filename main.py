@@ -1,10 +1,15 @@
 import argparse
 import datetime
 import pathlib
+import threading
 import warnings
+import multiprocessing
 
-from embIng.dynamic_edges import DynEdges
+from prometheus_client import start_http_server
+
 from gensim.models import FastText, Word2Vec
+
+from dataprocessing.kafkaconsumer import start_kafka_consumer
 
 
 with warnings.catch_warnings():
@@ -19,6 +24,10 @@ with warnings.catch_warnings():
     from embIng.dynamic_embeddings import initialize_embeddings
     # TODO: implement proper write_logging
     from embIng.write_logging import *
+    from dataprocessing.kafkaconsumer import ConsumerService, check_configuration
+    from dataprocessing.metrics import Metrics
+
+
 
 
 def parse_args():
@@ -145,6 +154,8 @@ def matching_driver(configuration):
 
     return file_row
 
+
+        
 def streaming_driver(configuration):
     '''This function initiates Graph and Embedding model for the streaming process. 
     Once the initiation finishes, driver will call kafka consumerwhich receives the data and performs the task ER
@@ -153,6 +164,7 @@ def streaming_driver(configuration):
     if configuration['task'] == 'smatch':
         ########### init #########
         ##### load edgelist
+
         edgelist_path = configuration['edgelists_file']
         if not os.path.exists(edgelist_path):
             prefixes = ["3#__tn", "3$__tt", "5$__idx", "1$__cid"]
@@ -179,19 +191,24 @@ def streaming_driver(configuration):
 
         ##### generate Graph according to the edges loaded above
         graph = dyn_graph_generation(configuration, el, prefixes)
-        if el != []:
-            if configuration['n_sentences'] == 'default':
-                #  Compute the number of sentences according to the rule of thumb.
-                configuration['n_sentences'] = graph.compute_n_sentences(int(configuration['sentence_length']))
-            configuration['random_walks_per_node'] = configuration['n_sentences'] // len(set(graph.cell_list)) # round down
-        else:
-            configuration['random_walks_per_node'] = int(configuration["representation_factor"]) // int(configuration["sentence_length"])
+        # if el != []:
+        #     if configuration['n_sentences'] == 'default':
+        #         #  Compute the number of sentences according to the rule of thumb.
+        #         configuration['n_sentences'] = graph.compute_n_sentences(int(configuration['sentence_length']))
+        #     configuration['random_walks_per_node'] = configuration['n_sentences'] // len(set(graph.cell_list)) # round down
+        # else:
+        #     configuration['random_walks_per_node'] = int(configuration["representation_factor"]) // int(configuration["sentence_length"])
+        #     print(1000/60)
+        #     print(600/60)
+        #     print(400/60)
+        configuration['random_walks_per_node'] = int(configuration["random_walks_per_node"])
         print("random_walks_per_node stream", configuration['random_walks_per_node'])
 
         ##### load model
         embeddings_file = configuration['embeddings_file']
         if el != []:
             if configuration['training_algorithm'] == 'fasttext':
+                print('load fasttext model...')
                 model = FastText.load(embeddings_file)
             else:
                 print('load word2vec model...')
@@ -200,6 +217,7 @@ def streaming_driver(configuration):
             # if not pathlib.Path(embeddings_file).exists():
             #     with open(embeddings_file, 'w'): pass
             ###### create an empty model
+            print("create a new model...")
             model = initialize_embeddings(write_walks=configuration['write_walks'],
                      dimensions=int(configuration['n_dimensions']),
                      window_size=int(configuration['window_size']),
@@ -207,7 +225,21 @@ def streaming_driver(configuration):
                      learning_method=configuration['learning_method'],
                      sampling_factor=configuration['sampling_factor'])
         ########### stream part ##############
-        stream_driver(configuration, graph, model, edgelist_path, embeddings_file, prefixes)
+
+        try:
+            check_configuration(configuration)
+        except Exception as e:
+            print(f"[ERROR] Can not upload configuration: {e}")
+        finally:
+            print('Streaming...')
+            if int(graph.num_ids) == 0:
+                id_num = -1
+            else: 
+                id_num = int(graph.num_ids)
+            consumer = start_kafka_consumer(configuration, graph, model, edgelist_path, embeddings_file, prefixes, id_num)
+            # consumer = ConsumerService(configuration, graph, model, edgelist_path, embeddings_file, prefixes, id_num, metric)
+            # consumer.run()
+        # stream_driver(configuration, graph, model, edgelist_path, embeddings_file, prefixes, metrics)
         
         pass
     elif configuration['task'] == 'smatch-nopretraining':
